@@ -21,45 +21,6 @@ A aplicação tem como objetivo oferecer uma base para a plataforma DevShowcase,
 - Zod
 - dotenv
 
-## Estrutura do projeto
-
-```text
-devshowcase-api/
-├── prisma/
-│   └── schema.prisma
-├── src/
-│   ├── app.js
-│   ├── config/
-│   │   └── prisma.js
-│   ├── controllers/
-│   │   ├── profile.controller.js
-│   │   ├── project.controller.js
-│   │   └── technology.controller.js
-│   ├── dtos/
-│   │   ├── profile.dto.js
-│   │   ├── project.dto.js
-│   │   └── technology.dto.js
-│   ├── routes/
-│   │   ├── index.js
-│   │   ├── profile.routes.js
-│   │   ├── project.routes.js
-│   │   └── technology.routes.js
-├── repositories/
-│   ├── profile.repository.js
-│   ├── project.repository.js
-│   └── technology.repository.js
-├── services/
-│   ├── profile.service.js
-│   ├── project.service.js
-│   └── technology.service.js
-├── server.js
-├── package.json
-├── .env
-├── .gitignore
-├── prisma7.config.ts
-└── README.md
-```
-
 ## Entidades do domínio
 
 ### Profile
@@ -106,10 +67,6 @@ A aplicação fica disponível em:
 ```text
 http://localhost:3000
 ```
-
-## Autor
-
-Elizabeth Teixeira
 
 ## Status do projeto
 

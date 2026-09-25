@@ -1,61 +1,54 @@
+// Este arquivo descreve a "planta" do banco de dados.
+// Cada "model" abaixo vira uma tabela no PostgreSQL.
 generator client {
-  provider = "prisma-client-js"
+provider = "prisma-client-js"
 }
-
 datasource db {
-  provider = "postgresql"
+provider = "postgresql"
 }
-
+// Perfil do desenvolvedor
 model Profile {
-  id           Int       @id @default(autoincrement())
-  name         String
-  email        String    @unique
-  bio          String?
-  githubUrl    String?
-  linkedinUrl  String?
-  avatarUrl    String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  projects     Project[]
+id Int @id @default(autoincrement())
+name String
+email String @unique
+bio String?
+avatarUrl String?
+createdAt DateTime @default(now())
+projects Project[] // 1 Profile tem N Projects
+@@map("profiles")
 }
-
-model Project {
-  id            Int                 @id @default(autoincrement())
-  title         String
-  description   String
-  repositoryUrl String
-  demoUrl       String?
-  imageUrl      String?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  profileId     Int
-  profile       Profile             @relation(fields: [profileId], references: [id])
-  technologies  ProjectTechnology[]
-  feedbacks     Feedback[]
-}
-
+// Tecnologia (ex: Node.js, React, PostgreSQL...)
 model Technology {
-  id          Int                 @id @default(autoincrement())
-  name        String              @unique
-  category    String?
-  createdAt   DateTime            @default(now())
-  projects    ProjectTechnology[]
+id String @id @default(uuid())
+name String @unique
+createdAt DateTime @default(now())
+projects Project[] // relação N:N com Project
+@@map("technologies")
 }
-
-model ProjectTechnology {
-  projectId    Int
-  technologyId Int
-  project      Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  technology   Technology  @relation(fields: [technologyId], references: [id], onDelete: Cascade)
-
-  @@id([projectId, technologyId])
+// Projeto publicado por um desenvolvedor
+model Project {
+id String @id @default(uuid())
+title String
+description String
+repositoryUrl String
+demoUrl String?
+averageRating Float @default(0)
+ratingCount Int @default(0)
+upvotes Int @default(0)
+createdAt DateTime @default(now())
+profileId Int
+profile Profile @relation(fields: [profileId], references: [id])
+technologies Technology[] // N:N com Technology
+feedbacks Feedback[] // 1 Project tem N Feedbacks
+@@map("projects")
 }
-
+// Opinião deixada em um projeto
 model Feedback {
-  id        Int      @id @default(autoincrement())
-  comment   String
-  rating    Int?
-  createdAt DateTime @default(now())
-  projectId Int
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+id String @id @default(uuid())
+comment String
+rating Int
+createdAt DateTime @default(now())
+projectId String
+project Project @relation(fields: [projectId], references: [id])
+@@map("feedbacks")
 }

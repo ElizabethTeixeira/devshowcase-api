@@ -1,73 +1,65 @@
-# DevShowcase API
+# DevShowcase API (v2) — Aluno 1
 
-API para gerenciamento de perfis de desenvolvedores, projetos, tecnologias e feedbacks, desenvolvida como parte da primeira etapa da disciplina de Programação Backend.
+API REST para publicação de projetos de desenvolvedores, com feedbacks (nota 1-5 + comentário), curtidas (upvotes) e busca de projetos com filtro por tecnologia.
 
-## Objetivo
+## Arquitetura
 
-A aplicação tem como objetivo oferecer uma base para a plataforma DevShowcase, permitindo:
-
-- cadastro de perfis de desenvolvedores
-- cadastro e listagem de tecnologias
-- cadastro e listagem de projetos
-- relacionamento entre perfil, projeto e tecnologia
-- persistência em banco de dados relacional com Prisma
-
-## Tecnologias utilizadas
-
-- Node.js
-- Express.js
-- Prisma ORM
-- PostgreSQL
-- Zod
-- dotenv
-
-## Entidades do domínio
-
-### Profile
-Representa o perfil do desenvolvedor.
-
-### Project
-Representa um projeto do desenvolvedor.
-
-### Technology
-Representa uma tecnologia utilizada no projeto.
-
-### Feedback
-Representa comentários ou avaliações sobre um projeto.
-
-## Relacionamentos
-
-- Profile 1:N Project
-- Project N:N Technology
-- Project 1:N Feedback
-
-## Endpoints da API
-
-### Perfis
-
-- POST /api/profiles
-- GET /api/profiles
-- GET /api/profiles/:id
-
-### Tecnologias
-
-- POST /api/technologies
-- GET /api/technologies
-
-### Projetos
-
-- POST /api/projects
-- GET /api/projects
+```
+rotas/         -> define as rotas e liga cada uma a uma função do service
+services/      -> recebe (req, res): valida a entrada (Zod), aplica as regras
+                   de negócio (cálculo de média, upvote) e responde
+repositories/  -> acesso a dados via Prisma
+dtos/          -> schemas Zod de validação de entrada
+middlewares/   -> manipulador global de erros (rota inexistente / erro inesperado)
+docs/          -> especificação OpenAPI (Swagger)
 ```
 
-## Verificação da API
+Cada função do service valida o corpo/query com Zod e responde direto com `res.status(400).json(...)` quando inválido, e com `res.status(404).json(...)` quando o recurso não existe — sem abstrações extras, para ficar fácil de acompanhar o fluxo. O `middlewares/tratadorErros.js` só cobre dois casos que não têm uma rota específica para tratar: uma rota que não existe (404) e um erro inesperado não capturado (500), incluindo JSON inválido no corpo da requisição.
 
-A aplicação fica disponível em:
+## Rodando localmente
 
-```text
-http://localhost:3000
+```bash
+npm install
+npx prisma migrate deploy   # aplica as migrações no banco definido em DATABASE_URL
+npm start                   # inicia em http://localhost:3000
 ```
 
-## Status do projeto
+Documentação interativa (Swagger UI): `http://localhost:3000/api/docs`
+Especificação OpenAPI (JSON): `http://localhost:3000/api/docs.json`
 
-Primeira etapa da entrega concluída: modelagem de domínio, persistência relacional e endpoints básicos.
+### Variáveis de ambiente (`.env`)
+
+| Variável       | Descrição                                  |
+|----------------|---------------------------------------------|
+| `DATABASE_URL` | Connection string do PostgreSQL (ex.: Neon) |
+| `PORT`         | Porta do servidor (opcional, padrão 3000)   |
+
+> Use o `.env.example` como referência e crie seu próprio banco (ex.: no [Neon](https://neon.tech)) — não reaproveite credenciais de outro projeto.
+
+## Endpoints principais
+
+| Método | Rota                              | Descrição                                              |
+|--------|------------------------------------|---------------------------------------------------------|
+| GET    | `/api/projects`                    | Lista projetos, com `?technology=`                       |
+| POST   | `/api/projects`                    | Cria um projeto                                          |
+| GET    | `/api/projects/:id`                | Busca um projeto pelo ID                                 |
+| POST   | `/api/projects/:id/feedbacks`      | Registra nota (1-5) + comentário e recalcula a média     |
+| PUT    | `/api/projects/:id/upvote`         | Incrementa a curtida do projeto                           |
+| POST   | `/api/profiles`                    | Cria um perfil de desenvolvedor                           |
+| GET    | `/api/profiles/:id`                | Busca um perfil pelo ID                                   |
+| POST   | `/api/tech`                        | Cria uma tecnologia                                        |
+| GET    | `/api/tech`                        | Lista as tecnologias                                       |
+
+## Deploy gratuito (Render)
+
+O banco de dados já roda no plano gratuito do [Neon](https://neon.tech). Para publicar a API, o [Render](https://render.com) tem um plano free para serviços web Node:
+
+1. Suba este projeto para um repositório no GitHub (garanta que `.env` **não** seja versionado — já está no `.gitignore`).
+2. Em [render.com](https://render.com), clique em **New > Blueprint** e aponte para o repositório (ele detecta o `render.yaml` na raiz), ou crie manualmente um **Web Service**:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+3. Configure a variável de ambiente `DATABASE_URL` no painel do Render com a connection string do Neon.
+4. Faça o deploy. O Render expõe a porta via `process.env.PORT`, já usado em [servidor.js](servidor.js).
+5. Após o deploy, a documentação ficará em `https://<seu-servico>.onrender.com/api/docs`.
+
+> Observação: no plano free do Render o serviço "dorme" após períodos de inatividade e leva alguns segundos para acordar na primeira requisição seguinte — normal para esse tier.

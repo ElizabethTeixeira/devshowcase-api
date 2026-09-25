@@ -1,4 +1,4 @@
-# DevShowcase API (v2) — Aluno 1
+# DevShowcase API (v2) 
 
 API REST para publicação de projetos de desenvolvedores, com feedbacks (nota 1-5 + comentário), curtidas (upvotes) e busca de projetos com filtro por tecnologia.
 
